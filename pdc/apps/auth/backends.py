@@ -56,7 +56,6 @@ def update_user_from_ldap(user, conn=None):
     finally:
         if not conn:
             ldap_object.unbind()
-
     if user_data:
         user.full_name = user_data["full_name"]
         user.email = user_data["email"]
