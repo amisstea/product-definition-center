@@ -258,32 +258,43 @@ class ReleasedFilesSerializer(StrictSerializerMixin, serializers.ModelSerializer
                   'zero_day_release', 'obsolete')
 
     def validate(self, data):
-        repo_format = data["repo"].content_format
-        repo_name = data["repo"].name
-        if str(repo_format) != "rpm":
-            raise serializers.ValidationError(
-                {'detail': 'Currently we just support rpm type of repo, the type of %s is %s ' % (repo_name, repo_format)})
-        d = models.RPM.objects.get(id=data["file_primary_key"])
-
-        if data["build"]:
-            if "%s-%s-%s" % (d.srpm_name, d.version, d.arch) != data["build"]:
+        if data.has_key("repo"):
+            repo_format = data["repo"].content_format
+            repo_name = data["repo"].name
+            if str(repo_format) != "rpm":
                 raise serializers.ValidationError(
-                    {'detail': 'Build should be %s' % ("%s-%s-%s" % (d.srpm_name, d.version, d.arch))})
-        else:
-            data["build"] = "%s-%s-%s" % (d.srpm_name, d.version, d.arch)
+                    {'detail': 'Currently we just support rpm type of repo, the type of %s is %s ' % (repo_name, repo_format)})
 
-        if data["package"]:
-            if d.srpm_name != data["package"]:
-                raise serializers.ValidationError(
-                    {'detail': 'Package should be %s' % d.srpm_name})
-        else:
-            data["package"] = d.srpm_name
+        if data.has_key("file_primary_key"):
+            d = models.RPM.objects.get(id=data["file_primary_key"])
+            if data.has_key("build"):
+                if data["build"]:
+                    if "%s-%s-%s" % (d.srpm_name, d.version, d.arch) != data["build"]:
+                        raise serializers.ValidationError(
+                            {'detail': 'Build should be %s' % ("%s-%s-%s" % (d.srpm_name, d.version, d.arch))})
+                    else:
+                        data["build"] = "%s-%s-%s" % (d.srpm_name, d.version, d.arch)
+            else:
+                data["build"] = "%s-%s-%s" % (d.srpm_name, d.version, d.arch)
 
-        if data["file"]:
-            if d.filename != data["file"]:
-                raise serializers.ValidationError(
-                    {'detail': 'File should be %s' % d.filename})
-        else:
-            data["file"] = d.filename
+            if data.has_key("package"):
+                if data["package"]:
+                    if d.srpm_name != data["package"]:
+                        raise serializers.ValidationError(
+                            {'detail': 'Package should be %s' % d.srpm_name})
+                else:
+                    data["package"] = d.srpm_name
+            else:
+                data["package"] = d.srpm_name
+
+            if data.has_key("file"):
+                if data["file"]:
+                    if d.filename != data["file"]:
+                        raise serializers.ValidationError(
+                            {'detail': 'File should be %s' % d.filename})
+                else:
+                    data["file"] = d.filename
+            else:
+                data["file"] = d.filename
 
         return data
