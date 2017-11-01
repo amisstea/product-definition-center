@@ -387,6 +387,9 @@ class ReleasedFiles(models.Model):
                         'updated_at', 'zero_day_release', 'obsolete'])
                    if fields is None else set(fields))
         result = model_to_dict(self, fields=_fields)
+        for k in ["release_date", "released_date", "created_at", "updated_at"]:
+            if k in result:
+                result[k] = str(result[k])
         return result
 
 

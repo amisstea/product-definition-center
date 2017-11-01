@@ -33,18 +33,7 @@ class NoSetattrInPreSaveMixin(object):
             obj.full_clean()
 
 
-class DateToJsonFormat(object):
-    """
-    This class is use for change the Date type to string in to serialize josn
-    """
-    def covert_date_to_string(self, json_item):
-        for k in json_item.keys():
-            if isinstance(json_item[k], datetime.date):
-                json_item[k] = str(json_item[k])
-        return json_item
-
-
-class ChangeSetCreateModelMixin(mixins.CreateModelMixin, DateToJsonFormat):
+class ChangeSetCreateModelMixin(mixins.CreateModelMixin):
     """
     Wrapper around CreateModelMixin that logs the change.
     """
@@ -55,11 +44,10 @@ class ChangeSetCreateModelMixin(mixins.CreateModelMixin, DateToJsonFormat):
             obj = [obj]
         for item in obj:
             model_name = get_model_name_from_obj_or_cls(item)
-            json_item = self.covert_date_to_string(item.export())
             self.request.changeset.add(model_name,
                                        item.id,
                                        'null',
-                                       json.dumps(json_item))
+                                       json.dumps(item.export()))
 
 
 class NoEmptyPatchMixin(object):
@@ -94,8 +82,7 @@ class NoEmptyPatchMixin(object):
 
 class ChangeSetUpdateModelMixin(NoSetattrInPreSaveMixin,
                                 NoEmptyPatchMixin,
-                                mixins.UpdateModelMixin,
-                                DateToJsonFormat):
+                                mixins.UpdateModelMixin):
     """
     Wrapper around UpdateModelMixin that logs the change.
     """
@@ -114,24 +101,21 @@ class ChangeSetUpdateModelMixin(NoSetattrInPreSaveMixin,
         self.object = obj
 
         model_name = get_model_name_from_obj_or_cls(obj)
-        json_item = self.covert_date_to_string(obj.export())
-        orign_json_item = self.covert_date_to_string(self.origin_obj)
         self.request.changeset.add(model_name,
                                    obj.id,
-                                   json.dumps(orign_json_item),
-                                   json.dumps(json_item))
+                                   json.dumps(self.origin_obj),
+                                   json.dumps(obj.export()))
         del self.origin_obj
 
 
-class ChangeSetDestroyModelMixin(mixins.DestroyModelMixin, DateToJsonFormat):
+class ChangeSetDestroyModelMixin(mixins.DestroyModelMixin):
     """
     Wrapper around DestroyModelMixin that logs the change.
     """
     def perform_destroy(self, obj):
         model_name = get_model_name_from_obj_or_cls(obj)
         obj_id = obj.id
-        json_item = self.covert_date_to_string(obj.export())
-        obj_content = json.dumps(json_item)
+        obj_content = json.dumps(obj.export())
         super(ChangeSetDestroyModelMixin, self).perform_destroy(obj)
         self.request.changeset.add(model_name,
                                    obj_id,
