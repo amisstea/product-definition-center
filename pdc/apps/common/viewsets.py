@@ -44,10 +44,14 @@ class ChangeSetCreateModelMixin(mixins.CreateModelMixin):
             obj = [obj]
         for item in obj:
             model_name = get_model_name_from_obj_or_cls(item)
+            json_item = item.export()
+            for k in json_item.keys():
+                if isinstance(json_item[k], datetime.date):
+                    json_item[k] = str(json_item[k])
             self.request.changeset.add(model_name,
                                        item.id,
                                        'null',
-                                       json.dumps(item.export()))
+                                       json.dumps(json_item))
 
 
 class NoEmptyPatchMixin(object):
@@ -101,10 +105,18 @@ class ChangeSetUpdateModelMixin(NoSetattrInPreSaveMixin,
         self.object = obj
 
         model_name = get_model_name_from_obj_or_cls(obj)
+        json_item = obj.export()
+        for k in json_item.keys():
+            if isinstance(json_item[k], datetime.date):
+                json_item[k] = str(json_item[k])
+        orign_json_item = self.origin_obj
+        for k in orign_json_item.keys():
+            if isinstance(orign_json_item[k], datetime.date):
+                orign_json_item[k] = str(orign_json_item[k])
         self.request.changeset.add(model_name,
                                    obj.id,
-                                   json.dumps(self.origin_obj),
-                                   json.dumps(obj.export()))
+                                   json.dumps(orign_json_item),
+                                   json.dumps(json_item))
         del self.origin_obj
 
 
@@ -115,7 +127,11 @@ class ChangeSetDestroyModelMixin(mixins.DestroyModelMixin):
     def perform_destroy(self, obj):
         model_name = get_model_name_from_obj_or_cls(obj)
         obj_id = obj.id
-        obj_content = json.dumps(obj.export())
+        json_item = obj.export()
+        for k in json_item.keys():
+            if isinstance(json_item[k], datetime.date):
+                json_item[k] = str(json_item[k])
+        obj_content = json.dumps(json_item)
         super(ChangeSetDestroyModelMixin, self).perform_destroy(obj)
         self.request.changeset.add(model_name,
                                    obj_id,

@@ -3,11 +3,13 @@
 # Licensed under The MIT License (MIT)
 # http://opensource.org/licenses/MIT
 #
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
+from rest_framework.response import Response
 
 from contrib.bulk_operations import bulk_operations
 from pdc.apps.common import viewsets as pdc_viewsets
 from pdc.apps.common.constants import PUT_OPTIONAL_PARAM_WARNING
+from pdc.apps.common.viewsets import PDCModelViewSet
 from pdc.apps.auth.permissions import APIPermission
 from . import models
 from . import serializers
@@ -532,3 +534,238 @@ class BuildImageRTTTestsViewSet(pdc_viewsets.StrictQueryParamMixin,
         of objects to be modified and their values use the same format as normal patch.
         """
         return bulk_operations.bulk_update_impl(self, *args, **kwargs)
+
+
+class ReleasedFilesViewSet(PDCModelViewSet):
+    """
+    API endpoint released files.
+    """
+    queryset = models.ReleasedFiles.objects.all().order_by('id')
+    serializer_class = serializers.ReleasedFilesSerializer
+    filter_class = filters.ReleasedFilesFilter
+    permission_classes = (APIPermission,)
+    docstring_macros = PUT_OPTIONAL_PARAM_WARNING
+
+    def _check_parameters(self, data):
+        pass
+
+    def list(self, *args, **kwargs):
+        """
+        __Method__: GET
+
+        __URL__: $LINK:releasedfiles-list$
+
+        __Query params__:
+
+        %(FILTERS)s
+
+        __Response__: a paged list of following objects
+
+            {
+                "build (optional, default=null)": "string",
+                "created_at (read-only)": "datetime",
+                "file (optional, default=null)": "string",
+                "file_primary_key": "int",
+                "id (read-only)": "int",
+                "obsolete (optional, default=false)": "boolean",
+                "package (optional, default=null)": "string",
+                "release_date": "date",
+                "released_date (optional, default=null)": "date",
+                "repo": {
+                            "arch": "string",
+                            "content_category": "ContentCategory.name",
+                            "content_format": "ContentFormat.name",
+                            "id (read-only)": "int",
+                            "name": "string",
+                            "product_id (optional, default=null, nullable)": "int",
+                            "release_id": "string",
+                            "repo_family": "RepoFamily.name",
+                            "service": "Service.name",
+                            "shadow (optional, default=false)": "boolean",
+                            "variant_uid": "string"
+                        },
+                "updated_at (read-only)": "datetime",
+                "zero_day_release (optional, default=false)": "boolean"
+            }
+        """
+        return super(ReleasedFilesViewSet, self).list(*args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        """
+        __Method__: POST
+
+        __URL__: $LINK:releasedfiles-list$
+
+        __Data__:
+
+            {
+                "file_primary_key": "int",
+                "release_date": "date",
+                "repo": "Repo.id",
+                "package (optional, default=null)": "string",
+                "build (optional, default=null)": "string",
+                "file (optional, default=null)": "string",
+                "created_at (optional, default=null)": "date",
+                "released_date (optional, default=null)": "date",
+                "updated_at (optional, default=null)": "date",
+                "obsolete (optional, default=false)": "boolean",
+                "zero_day_release (optional, default=false)": "boolean"
+            }
+
+        * *repo*: $LINK:contentdeliveryrepos-list$
+
+        Currently pdc just can insert data with *repo.content_format* rpm.
+
+        *build*, *file*, *package* can auto fill, the *build* is *rpm.srpm_name-rpm.version-rpm.arch*,
+        the *file* is *rpm.filename*, the *package* is *rpm.srpm_name*.
+
+        __Response__:
+
+            {
+                "build (optional, default=null)": "string",
+                "created_at (read-only)": "datetime",
+                "file (optional, default=null)": "string",
+                "file_primary_key": "int",
+                "id (read-only)": "int",
+                "obsolete (optional, default=false)": "boolean",
+                "package (optional, default=null)": "string",
+                "release_date": "date",
+                "released_date (optional, default=null)": "date",
+                "repo": {
+                            "arch": "string",
+                            "content_category": "ContentCategory.name",
+                            "content_format": "ContentFormat.name",
+                            "id (read-only)": "int",
+                            "name": "string",
+                            "product_id (optional, default=null, nullable)": "int",
+                            "release_id": "string",
+                            "repo_family": "RepoFamily.name",
+                            "service": "Service.name",
+                            "shadow (optional, default=false)": "boolean",
+                            "variant_uid": "string"
+                        },
+                "updated_at (read-only)": "datetime",
+                "zero_day_release (optional, default=false)": "boolean"
+            }
+
+        """
+        data = request.data
+        errors = self._check_parameters(data)
+        if errors:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=errors)
+        return super(ReleasedFilesViewSet, self).create(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        __Method__: GET
+
+        __URL__: $LINK:releasedfiles-detail:instance_pk$
+
+        __Response__:
+
+            {
+                "build (optional, default=null)": "string",
+                "created_at (read-only)": "datetime",
+                "file (optional, default=null)": "string",
+                "file_primary_key": "int",
+                "id (read-only)": "int",
+                "obsolete (optional, default=false)": "boolean",
+                "package (optional, default=null)": "string",
+                "release_date": "date",
+                "released_date (optional, default=null)": "date",
+                "repo": {
+                            "arch": "string",
+                            "content_category": "ContentCategory.name",
+                            "content_format": "ContentFormat.name",
+                            "id (read-only)": "int",
+                            "name": "string",
+                            "product_id (optional, default=null, nullable)": "int",
+                            "release_id": "string",
+                            "repo_family": "RepoFamily.name",
+                            "service": "Service.name",
+                            "shadow (optional, default=false)": "boolean",
+                            "variant_uid": "string"
+                        },
+                "updated_at (read-only)": "datetime",
+                "zero_day_release (optional, default=false)": "boolean"
+            }
+        """
+        return super(ReleasedFilesViewSet, self).retrieve(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """
+        %(PUT_OPTIONAL_PARAM_WARNING)s
+
+        __Method__: `PUT`, `PATCH`
+
+        __URL__: $LINK:releasedfiles-detail:instance_pk$
+
+        __Data__:
+
+            {
+                "file_primary_key": "int",
+                "release_date": "date",
+                "repo": "Repo.id",
+                "package (optional, default=null)": "string",
+                "build (optional, default=null)": "string",
+                "file (optional, default=null)": "string",
+                "created_at (optional, default=null)": "date",
+                "released_date (optional, default=null)": "date",
+                "updated_at (optional, default=null)": "date",
+                "obsolete (optional, default=false)": "boolean",
+                "zero_day_release (optional, default=false)": "boolean"
+            }
+
+        * *repo*: $LINK:contentdeliveryrepos-list$
+
+        Currently pdc just can insert data with *repo.content_format* rpm.
+
+        *build*, *file*, *package* can auto fill, the *build* is *rpm.srpm_name-rpm.version-rpm.arch*,
+        the *file* is *rpm.filename*, the *package* is *rpm.srpm_name*.
+
+        __Response__:
+
+            {
+                "build (optional, default=null)": "string",
+                "created_at (read-only)": "datetime",
+                "file (optional, default=null)": "string",
+                "file_primary_key": "int",
+                "id (read-only)": "int",
+                "obsolete (optional, default=false)": "boolean",
+                "package (optional, default=null)": "string",
+                "release_date": "date",
+                "released_date (optional, default=null)": "date",
+                "repo": {
+                            "arch": "string",
+                            "content_category": "ContentCategory.name",
+                            "content_format": "ContentFormat.name",
+                            "id (read-only)": "int",
+                            "name": "string",
+                            "product_id (optional, default=null, nullable)": "int",
+                            "release_id": "string",
+                            "repo_family": "RepoFamily.name",
+                            "service": "Service.name",
+                            "shadow (optional, default=false)": "boolean",
+                            "variant_uid": "string"
+                        },
+                "updated_at (read-only)": "datetime",
+                "zero_day_release (optional, default=false)": "boolean"
+            }
+        """
+        return super(ReleasedFilesViewSet, self).update(request, *args, **kwargs)
+
+    def destroy(self, *args, **kwargs):
+        """
+        __Method__: DELETE
+
+        __URL__: $LINK:releasedfiles-detail:instance_pk$
+
+        __Response__:
+
+        On success, HTTP status code is 204 and the response has no content
+
+        __Example__:
+
+            curl -X DELETE -H "Content-Type: application/json" $URL:releasedfiles-detail:1$
+        """
+        return super(ReleasedFilesViewSet, self).destroy(*args, **kwargs)

@@ -12,6 +12,7 @@ from . import models
 from pdc.apps.compose.models import ComposeAcceptanceTestingState
 from pdc.apps.common.fields import ChoiceSlugField
 from pdc.apps.common.serializers import StrictSerializerMixin
+from pdc.apps.repository.models import Repo
 
 
 class DefaultFilenameGenerator(object):
@@ -221,3 +222,68 @@ class BuildImageRTTTestsSerializer(StrictSerializerMixin, serializers.ModelSeria
     class Meta:
         model = models.BuildImage
         fields = ('id', 'build_nvr', 'format', 'test_result')
+
+
+class RepositoryField(serializers.SlugRelatedField):
+    def __init__(self, **kwargs):
+        super(RepositoryField, self).__init__(slug_field='id', queryset=Repo.objects.all(), **kwargs)
+
+    def to_representation(self, value):
+        export_data = value.export()
+        export_data["id"] = value.id
+        return export_data
+
+
+class ReleasedFilesSerializer(StrictSerializerMixin, serializers.ModelSerializer):
+    # base on content.format, currently rpm.srpm_name, rpm.version, rpm.release
+    build = serializers.CharField(required=False, default=None)
+    # base on content.format, currently rpm.srpm_name
+    package = serializers.CharField(required=False, default=None)
+    # base on content.format, currently rpm.filename
+    file = serializers.CharField(required=False, default=None)
+    # base on content.format, pk
+    file_primary_key = serializers.IntegerField(allow_null=False)
+    repo = RepositoryField()
+    released_date = serializers.DateField(required=False)
+    release_date = serializers.DateField()
+    created_at = serializers.DateTimeField(required=False, read_only=True)
+    updated_at = serializers.DateTimeField(required=False, read_only=True)
+    zero_day_release = serializers.BooleanField(required=False, default=False)
+    obsolete = serializers.BooleanField(required=False, default=False)
+
+    class Meta:
+        model = models.ReleasedFiles
+        fields = ('id', 'build', 'package', 'file', 'file_primary_key', 'repo',
+                  'released_date', 'release_date', 'created_at', 'updated_at',
+                  'zero_day_release', 'obsolete')
+
+    def validate(self, data):
+        repo_format = data["repo"].content_format
+        repo_name = data["repo"].name
+        if str(repo_format) != "rpm":
+            raise serializers.ValidationError(
+                {'detail': 'Currently we just support rpm type of repo, the type of %s is %s ' % (repo_name, repo_format)})
+        d = models.RPM.objects.get(id=data["file_primary_key"])
+
+        if data["build"]:
+            if "%s-%s-%s" % (d.srpm_name, d.version, d.arch) != data["build"]:
+                raise serializers.ValidationError(
+                    {'detail': 'Build should be %s' % ("%s-%s-%s" % (d.srpm_name, d.version, d.arch))})
+        else:
+            data["build"] = "%s-%s-%s" % (d.srpm_name, d.version, d.arch)
+
+        if data["package"]:
+            if d.srpm_name != data["package"]:
+                raise serializers.ValidationError(
+                    {'detail': 'Package should be %s' % d.srpm_name})
+        else:
+            data["package"] = d.srpm_name
+
+        if data["file"]:
+            if d.filename != data["file"]:
+                raise serializers.ValidationError(
+                    {'detail': 'File should be %s' % d.filename})
+        else:
+            data["file"] = d.filename
+
+        return data
