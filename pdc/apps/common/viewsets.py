@@ -41,6 +41,7 @@ class DateToJsonFormat(object):
         for k in json_item.keys():
             if isinstance(json_item[k], datetime.date):
                 json_item[k] = str(json_item[k])
+        return json_item
 
 
 class ChangeSetCreateModelMixin(mixins.CreateModelMixin, DateToJsonFormat):
