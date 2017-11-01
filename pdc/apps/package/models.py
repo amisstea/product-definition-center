@@ -28,7 +28,6 @@ from pdc.apps.package.apps import PackageConfig
 from pdc.apps.repository.models import Repo
 from django.utils import timezone
 
-
 class RPM(models.Model):
     name                = models.CharField(max_length=200, db_index=True)
     epoch               = models.PositiveIntegerField()
@@ -367,7 +366,7 @@ class ReleasedFiles(models.Model):
     repo             = models.ForeignKey(Repo)
     released_date    = models.DateField(blank=True, null=True)
     release_date     = models.DateField()
-    created_at       = models.DateTimeField(null=True, default=timezone.now())
+    created_at       = models.DateTimeField(default=timezone.now)
     updated_at       = models.DateTimeField(auto_now=True)
     # 0 day release
     zero_day_release = models.BooleanField(default=False)
