@@ -28,6 +28,7 @@ from pdc.apps.package.apps import PackageConfig
 from pdc.apps.repository.models import Repo
 from django.utils import timezone
 
+
 class RPM(models.Model):
     name                = models.CharField(max_length=200, db_index=True)
     epoch               = models.PositiveIntegerField()
