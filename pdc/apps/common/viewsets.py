@@ -55,9 +55,6 @@ class ChangeSetCreateModelMixin(mixins.CreateModelMixin, DateToJsonFormat):
         for item in obj:
             model_name = get_model_name_from_obj_or_cls(item)
             json_item = self.covert_date_to_string(item.export())
-            # for k in json_item.keys():
-            #     if isinstance(json_item[k], datetime.date):
-            #         json_item[k] = str(json_item[k])
             self.request.changeset.add(model_name,
                                        item.id,
                                        'null',
@@ -117,15 +114,6 @@ class ChangeSetUpdateModelMixin(NoSetattrInPreSaveMixin,
         model_name = get_model_name_from_obj_or_cls(obj)
         json_item = self.covert_date_to_string(obj.export())
         orign_json_item = self.covert_date_to_string(self.origin_obj)
-
-        # json_item = obj.export()
-        # for k in json_item.keys():
-        #     if isinstance(json_item[k], datetime.date):
-        #         json_item[k] = str(json_item[k])
-        # orign_json_item = self.origin_obj
-        # for k in orign_json_item.keys():
-        #     if isinstance(orign_json_item[k], datetime.date):
-        #         orign_json_item[k] = str(orign_json_item[k])
         self.request.changeset.add(model_name,
                                    obj.id,
                                    json.dumps(orign_json_item),
@@ -140,10 +128,6 @@ class ChangeSetDestroyModelMixin(mixins.DestroyModelMixin):
     def perform_destroy(self, obj):
         model_name = get_model_name_from_obj_or_cls(obj)
         obj_id = obj.id
-        # json_item = obj.export()
-        # for k in json_item.keys():
-        #     if isinstance(json_item[k], datetime.date):
-        #         json_item[k] = str(json_item[k])
         json_item = self.covert_date_to_string(obj.export())
         obj_content = json.dumps(json_item)
         super(ChangeSetDestroyModelMixin, self).perform_destroy(obj)
