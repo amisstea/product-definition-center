@@ -94,7 +94,8 @@ class NoEmptyPatchMixin(object):
 
 class ChangeSetUpdateModelMixin(NoSetattrInPreSaveMixin,
                                 NoEmptyPatchMixin,
-                                mixins.UpdateModelMixin):
+                                mixins.UpdateModelMixin,
+                                DateToJsonFormat):
     """
     Wrapper around UpdateModelMixin that logs the change.
     """
@@ -122,7 +123,7 @@ class ChangeSetUpdateModelMixin(NoSetattrInPreSaveMixin,
         del self.origin_obj
 
 
-class ChangeSetDestroyModelMixin(mixins.DestroyModelMixin):
+class ChangeSetDestroyModelMixin(mixins.DestroyModelMixin, DateToJsonFormat):
     """
     Wrapper around DestroyModelMixin that logs the change.
     """

@@ -258,16 +258,16 @@ class ReleasedFilesSerializer(StrictSerializerMixin, serializers.ModelSerializer
                   'zero_day_release', 'obsolete')
 
     def validate(self, data):
-        if data.has_key("repo"):
+        if "repo" in data:
             repo_format = data["repo"].content_format
             repo_name = data["repo"].name
             if str(repo_format) != "rpm":
                 raise serializers.ValidationError(
                     {'detail': 'Currently we just support rpm type of repo, the type of %s is %s ' % (repo_name, repo_format)})
 
-        if data.has_key("file_primary_key"):
+        if "file_primary_key" in data:
             d = models.RPM.objects.get(id=data["file_primary_key"])
-            if data.has_key("build"):
+            if "build" in data:
                 if data["build"]:
                     if "%s-%s-%s" % (d.srpm_name, d.version, d.arch) != data["build"]:
                         raise serializers.ValidationError(
@@ -277,7 +277,7 @@ class ReleasedFilesSerializer(StrictSerializerMixin, serializers.ModelSerializer
             else:
                 data["build"] = "%s-%s-%s" % (d.srpm_name, d.version, d.arch)
 
-            if data.has_key("package"):
+            if "package" in data:
                 if data["package"]:
                     if d.srpm_name != data["package"]:
                         raise serializers.ValidationError(
@@ -287,7 +287,7 @@ class ReleasedFilesSerializer(StrictSerializerMixin, serializers.ModelSerializer
             else:
                 data["package"] = d.srpm_name
 
-            if data.has_key("file"):
+            if "file" in data:
                 if data["file"]:
                     if d.filename != data["file"]:
                         raise serializers.ValidationError(
