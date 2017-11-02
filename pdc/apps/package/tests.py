@@ -1917,6 +1917,14 @@ class ReleasedFilesRESTTestCase(TestCaseWithChangeSetMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
 
+        response = self.client.get(reverse('releasedfiles-list'), {"release_date_after": "2017-11-10"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 0)
+
+        response = self.client.get(reverse('releasedfiles-list'), {"release_date_before": "2017-11-10"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 2)
+
         response = self.client.get(reverse('releasedfiles-list'), {"release_id": "release-1.0"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)

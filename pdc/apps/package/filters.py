@@ -167,20 +167,24 @@ class BuildImageRTTTestsFilter(django_filters.FilterSet):
 
 
 class ReleasedFilesFilter(django_filters.FilterSet):
-    file             = MultiValueFilter()
-    package          = MultiValueFilter()
-    build            = MultiValueFilter()
-    released_date    = MultiValueFilter()
-    release_date     = MultiValueFilter()
+    file = MultiValueFilter()
+    package = MultiValueFilter()
+    build = MultiValueFilter()
+    released_date = MultiValueFilter()
+    release_date = MultiValueFilter()
     zero_day_release = CaseInsensitiveBooleanFilter()
-    obsolete         = CaseInsensitiveBooleanFilter()
+    obsolete = CaseInsensitiveBooleanFilter()
     file_primary_key = MultiIntFilter()
-    repo             = MultiValueFilter(name='repo__id')
-    repo_name        = MultiValueFilter(name='repo__name')
-    release_id       = MultiValueFilter(name='repo__variant_arch__variant__release__release_id')
+    repo = MultiValueFilter(name='repo__id')
+    repo_name = MultiValueFilter(name='repo__name')
+    release_id = MultiValueFilter(name='repo__variant_arch__variant__release__release_id')
     service = MultiValueFilter(name='repo__service__name')
     arch = MultiValueFilter(name='repo__variant_arch__arch__name')
     variant_uid = MultiValueFilter(name='repo__variant_arch__variant__variant_uid')
+    release_date_after = django_filters.DateFilter(name="release_date", lookup_type='gte')
+    release_date_before = django_filters.DateFilter(name="release_date", lookup_type='lte')
+    released_date_after = django_filters.DateFilter(name="released_date", lookup_type='gte')
+    released_date_before = django_filters.DateFilter(name="released_date", lookup_type='lte')
 
     class Meta:
         model = models.ReleasedFiles
